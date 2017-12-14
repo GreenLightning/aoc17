@@ -33,26 +33,30 @@ func main() {
 
 	{
 		fmt.Println("--- Part Two ---")
-		lengths := make([]int, 0)
-		for _, b := range []byte(input) {
-			lengths = append(lengths, int(b))
-		}
-		lengths = append(lengths, 17, 31, 73, 47, 23)
-		list := makeList()
-		current, skip := 0, 0
-		for i := 0; i < 64; i++ {
-			current, skip = doOneRound(list, lengths, current, skip)
-		}
-		result := ""
-		for i := 0; i < 16; i++ {
-			value := 0
-			for j := 0; j < 16; j++ {
-				value ^= list[16 * i + j]
-			}
-			result += fmt.Sprintf("%02x", value)
-		}
-		fmt.Println(result)
+		fmt.Println(calculateKnotHash(input))
 	}
+}
+
+func calculateKnotHash(input string) string {
+	lengths := make([]int, 0)
+	for _, b := range []byte(input) {
+		lengths = append(lengths, int(b))
+	}
+	lengths = append(lengths, 17, 31, 73, 47, 23)
+	list := makeList()
+	current, skip := 0, 0
+	for i := 0; i < 64; i++ {
+		current, skip = doOneRound(list, lengths, current, skip)
+	}
+	result := ""
+	for i := 0; i < 16; i++ {
+		value := 0
+		for j := 0; j < 16; j++ {
+			value ^= list[16 * i + j]
+		}
+		result += fmt.Sprintf("%02x", value)
+	}
+	return result
 }
 
 func makeList() []int {
