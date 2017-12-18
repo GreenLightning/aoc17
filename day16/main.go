@@ -24,18 +24,29 @@ func main() {
 
 	moves := strings.Split(input, ",")
 
-	helper := make([]int, 16)
+	permutation, transmutation := parseMoves(moves)
 
-	permutation := make([]int, 16)
-	for i := 0; i < len(permutation); i++ {
-		permutation[i] = i
+	programs, helper := makeSlice(), makeSlice()
+
+	fmt.Println("--- Part One ---")
+	applyOnce(programs, helper, permutation, transmutation)
+	printPrograms(programs)
+
+	fmt.Println("--- Part Two ---")
+	applyCount(programs, helper, permutation, transmutation, 1, 1e9 - 1)
+	printPrograms(programs)
+}
+
+func makeSlice() []int {
+	slice := make([]int, 16)
+	for i := 0; i < len(slice); i++ {
+		slice[i] = i
 	}
+	return slice
+}
 
-	transmutation := make([]int, 16)
-	for i := 0; i < len(transmutation); i++ {
-		transmutation[i] = i
-	}
-
+func parseMoves(moves []string) ([]int, []int) {
+	permutation, transmutation, helper := makeSlice(), makeSlice(), makeSlice()
 	for _, move := range moves {
 		switch move[0] {
 		case 's':
@@ -64,37 +75,46 @@ func main() {
 			transmutation[ai], transmutation[bi] = transmutation[bi], transmutation[ai]
 		}
 	}
+	return permutation, transmutation
+}
 
-	programs := make([]int, 16)
-	for i := 0; i < len(programs); i++ {
-		programs[i] = i
+func applyCount(programs, helper, permutation, transmutation []int, power, count int) int {
+	if 2 * power <= count {
+		doublePermutation := makeSlice()
+		for i, p := range permutation {
+			helper[i] = doublePermutation[p]
+		}
+		for i, p := range permutation {
+			doublePermutation[i] = helper[p]
+		}
+
+		doubleTransmutation := makeSlice()
+		for step := 0; step < 2; step++ {
+			for i, p := range doubleTransmutation {
+				doubleTransmutation[i] = transmutation[p]
+			}
+		}
+
+		count = applyCount(programs, helper, doublePermutation, doubleTransmutation, 2 * power, count)
 	}
 
+	for ; power <= count; count -= power {
+		applyOnce(programs, helper, permutation, transmutation)
+	}
+
+	return count
+}
+
+func applyOnce(programs, helper, permutation, transmutation []int) {
 	for i, p := range permutation {
 		helper[i] = programs[p]
 	}
-
 	for i, p := range helper {
 		programs[i] = transmutation[p]
 	}
+}
 
-	fmt.Println("--- Part One ---")
-	for _, p := range programs {
-		fmt.Print(string(table[p]))
-	}
-	fmt.Println()
-
-	for i := 0; i < 1e9 - 1; i++ {
-		for i, p := range permutation {
-			helper[i] = programs[p]
-		}
-
-		for i, p := range helper {
-			programs[i] = transmutation[p]
-		}
-	}
-
-	fmt.Println("--- Part Two ---")
+func printPrograms(programs []int) {
 	for _, p := range programs {
 		fmt.Print(string(table[p]))
 	}
